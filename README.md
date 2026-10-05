@@ -27,6 +27,8 @@ Open **http://127.0.0.1:8000**
 
 ## Public prototype
 
+Try the live demo: [QueueLess AI](https://queueless-ai-demo.onrender.com)
+
 Deploy the demo to Render using the project Blueprint:
 
 [Deploy QueueLess AI to Render](https://render.com/deploy?repo=https://github.com/mmolawamatenche-cloud/queueless-ai)
