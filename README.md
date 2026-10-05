@@ -25,6 +25,14 @@ uvicorn backend.main:app --reload --host 127.0.0.1 --port 8000
 
 Open **http://127.0.0.1:8000**
 
+## Public prototype
+
+Deploy the demo to Render using the project Blueprint:
+
+[Deploy QueueLess AI to Render](https://render.com/deploy?repo=https://github.com/mmolawamatenche-cloud/queueless-ai)
+
+The hosted app is a public prototype, not a live government service. It uses sample queue data and has no DHA integration. Plans, reports, and feedback are held in in-memory storage and may reset when the service restarts or redeploys. Do not enter sensitive personal information.
+
 ## 2-minute demo
 
 1. Home → enter: `I need to renew my passport.`
