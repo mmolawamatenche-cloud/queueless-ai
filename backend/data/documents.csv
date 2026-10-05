@@ -1,0 +1,35 @@
+service_id,document_code,document_name,required,notes
+passport_renewal,sa_id,South African ID / Smart ID,true,Valid ID book or smart ID card
+passport_renewal,application,Completed passport application details,true,DHA-73 or online application reference
+passport_renewal,payment,Payment method / proof of payment,true,Card or cash as accepted by the office
+passport_renewal,appointment,Appointment confirmation,true,Book via DHA channels before visiting where required
+passport_new,sa_id,South African ID / Smart ID,true,Valid ID book or smart ID card
+passport_new,application,Completed passport application details,true,DHA-73 or online application reference
+passport_new,payment,Payment method / proof of payment,true,Card or cash as accepted by the office
+passport_new,photos,Passport photos,true,As per DHA photo specifications
+passport_new,appointment,Appointment confirmation,true,Book via DHA channels before visiting where required
+id_application,birth_cert,Birth certificate,true,Official birth certificate
+id_application,photos,ID photos,true,As required for smart ID / ID book
+id_application,payment,Payment method,true,Applicable fees
+id_replacement,affidavit,Police affidavit / lost ID statement,true,For lost or stolen IDs
+id_replacement,birth_cert,Birth certificate,true,Official birth certificate
+id_replacement,photos,ID photos,true,As required
+id_replacement,payment,Payment method,true,Applicable fees
+birth_registration,hospital_notice,Notice of birth from hospital/clinic,true,Form from birthing facility
+birth_registration,parents_id,Parent(s) ID documents,true,Both parents where applicable
+birth_registration,marriage_cert,Parents' marriage certificate,false,If married
+marriage_certificate,both_ids,Both parties' ID documents,true,Valid IDs
+marriage_certificate,application,Marriage application forms,true,As prescribed
+death_certificate,deceased_id,Deceased person's ID,true,If available
+death_certificate,medical_cert,Medical certificate of cause of death,true,From registered medical practitioner
+death_certificate,informant_id,Informant's ID,true,Person reporting the death
+visa_application,passport,Valid passport,true,Current passport
+visa_application,application,Completed visa/permit forms,true,Relevant DHA forms
+visa_application,supporting,Supporting documents per permit type,true,Varies by permit category
+visa_application,appointment,Appointment confirmation,true,Where appointments are required
+drivers_licence,sa_id,South African ID,true,Valid ID
+drivers_licence,eye_test,Eye test certificate,true,From registered optometrist where required
+drivers_licence,old_licence,Current / expired licence,true,If renewing
+drivers_licence,payment,Payment method,true,Applicable fees
+clinic_visit,sa_id,South African ID / clinic card,true,For patient identification
+clinic_visit,referral,Referral letter,false,If referred from another facility

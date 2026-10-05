@@ -1,0 +1,6 @@
+{
+  "mae_minutes": 4.43,
+  "rows_trained": 5172,
+  "label": "AI estimate based on historical/sample data",
+  "accuracy_note": "Demo model MAE ~ 4.4 minutes on hold-out sample"
+}

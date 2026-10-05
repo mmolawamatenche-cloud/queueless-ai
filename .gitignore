@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/database/queueless.db
+backend/database/*.db
+models/*.pkl
+*.egg-info/
+.DS_Store
+.env

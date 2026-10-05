@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dashboard — QueueLess AI</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body data-page="dashboard">
+    <header class="topnav">
+      <a class="brand" href="/">
+        <span class="brand-mark">Q</span>
+        <span>QueueLess AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/plan.html">My Plan</a>
+        <a href="/report.html">Report Queue</a>
+        <a href="/history.html">History</a>
+        <a class="active" href="/dashboard.html">Dashboard</a>
+      </nav>
+    </header>
+    <main class="wrap">
+      <section class="hero">
+        <span class="demo-pill">Intelligence layer</span>
+        <h1 style="font-size:clamp(1.8rem,4vw,2.4rem)">Data dashboard</h1>
+        <p class="lede">
+          Reports, predictions, and demand signals powering QueueLess AI.
+        </p>
+      </section>
+      <div id="dashboard"></div>
+    </main>
+    <footer class="footer">Demo Mode — figures reflect sample historical data and in-app reports.</footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

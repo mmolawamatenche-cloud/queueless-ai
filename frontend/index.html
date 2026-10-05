@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>QueueLess AI — Know Before You Go</title>
+    <meta
+      name="description"
+      content="AI-powered South African service-access assistant. Tell QueueLess AI what you need — get the best plan for Home Affairs and essential services."
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body data-page="home">
+    <header class="topnav">
+      <a class="brand" href="/">
+        <span class="brand-mark">Q</span>
+        <span><span class="full">QueueLess</span> AI</span>
+      </a>
+      <nav class="nav-links" aria-label="Main">
+        <a class="active" href="/">Home</a>
+        <a href="/plan.html">My Plan</a>
+        <a href="/report.html">Report Queue</a>
+        <a href="/history.html">History</a>
+        <a href="/dashboard.html">Dashboard</a>
+      </nav>
+    </header>
+
+    <main class="wrap">
+      <section class="hero">
+        <span class="demo-pill">Demo Mode · Historical + user reports</span>
+        <h1>QueueLess AI</h1>
+        <p class="tagline">Know Before You Go.</p>
+        <p class="lede">
+          Tell QueueLess AI what you need — it creates a personalised visit plan:
+          where to go, when to go, and what to bring.
+        </p>
+      </section>
+
+      <section class="impact-strip" aria-label="Problem we solve">
+        <h2 class="impact-title">The real problem</h2>
+        <ol class="waste-chain">
+          <li>Travel far</li>
+          <li>Wait hours</li>
+          <li>Missing document</li>
+          <li>Come back another day</li>
+        </ol>
+        <p class="impact-fix">
+          QueueLess AI aims to break that chain — fewer wasted trips, not just shorter queues.
+        </p>
+      </section>
+
+      <section class="assistant" aria-label="AI assistant">
+        <form id="assist-form">
+          <label for="query-input">What do you need help with?</label>
+          <div class="input-row">
+            <textarea
+              id="query-input"
+              name="query"
+              placeholder="Tell QueueLess AI… e.g. I need to renew my passport"
+              required
+            ></textarea>
+            <button class="btn btn-primary" id="ask-btn" type="submit">Get my AI plan</button>
+          </div>
+          <div class="examples" aria-label="Examples">
+            <button type="button" class="chip" data-query="I need to renew my passport">
+              “I need to renew my passport”
+            </button>
+            <button type="button" class="chip" data-query="I lost my ID">
+              “I lost my ID”
+            </button>
+            <button type="button" class="chip" data-query="I need a driver's licence">
+              “I need a driver's licence”
+            </button>
+            <button type="button" class="chip" data-query="I need to register my child">
+              “I need to register my child”
+            </button>
+          </div>
+          <div class="location-row">
+            <input
+              id="location-input"
+              type="text"
+              value="Johannesburg"
+              placeholder="Enter location (e.g. Soweto, Pretoria)"
+              aria-label="Location"
+            />
+            <button type="button" class="btn btn-ghost" id="use-location">Use my location</button>
+          </div>
+        </form>
+      </section>
+
+      <section id="error-panel" class="panel hidden" role="alert"></section>
+      <section id="intent-panel" class="panel hidden"></section>
+      <section id="analyse-panel" class="panel hidden"></section>
+      <section id="plan-panel" class="panel hidden"></section>
+
+      <section class="booking-card demo" aria-label="Demo booking confirmation">
+        <span class="badge">DEMO — SIMULATED BOOKING</span>
+        <h3>Reference: <span id="ref">QL-AB12CD</span></h3>
+        <p id="details">Passport renewal · Johannesburg CBD · 2026-10-01 09:00</p>
+        <p class="disclaimer">
+          ⚠️ This is a prototype simulation. No real appointment has been made with any
+          government department.
+        </p>
+      </section>
+
+      <section class="panel layers" aria-label="How QueueLess works">
+        <h2>How QueueLess thinks</h2>
+        <div class="layer-grid">
+          <div class="layer">
+            <span class="layer-k">AI</span>
+            <p>Understands your need, predicts demand, recommends a plan.</p>
+          </div>
+          <div class="layer">
+            <span class="layer-k">Data</span>
+            <p>Historical patterns + crowdsourced reports + service checklist DB.</p>
+          </div>
+          <div class="layer">
+            <span class="layer-k">You</span>
+            <p>Say what you need. Get a plan. Report a queue. No ID uploads.</p>
+          </div>
+        </div>
+        <div class="source-legend">
+          <span class="badge badge-hist">Historical / sample</span>
+          <span class="badge badge-report">User-reported</span>
+          <span class="badge badge-pred">AI predicted</span>
+        </div>
+        <p class="privacy-note">
+          Privacy (MVP): checklist only — we do not store ID or passport images.
+        </p>
+      </section>
+    </main>
+
+    <footer class="footer">
+      QueueLess AI is a service-access assistant for South Africa — not a live government
+      queue feed. Estimates are labelled. Verify official requirements before you travel.
+    </footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

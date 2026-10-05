@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en-ZA">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Report Queue — QueueLess AI</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body data-page="report">
+    <header class="topnav">
+      <a class="brand" href="/">
+        <span class="brand-mark">Q</span>
+        <span>QueueLess AI</span>
+      </a>
+      <nav class="nav-links">
+        <a href="/">Home</a>
+        <a href="/plan.html">My Plan</a>
+        <a class="active" href="/report.html">Report Queue</a>
+        <a href="/history.html">History</a>
+        <a href="/dashboard.html">Dashboard</a>
+      </nav>
+    </header>
+    <main class="wrap">
+      <section class="hero">
+        <span class="demo-pill">User-reported</span>
+        <h1 style="font-size:clamp(1.8rem,4vw,2.4rem)">Report current queue</h1>
+        <p class="lede">Help others Know Before You Go. Reports improve AI predictions.</p>
+      </section>
+
+      <section class="panel">
+        <form id="report-form" class="form-stack">
+          <label>
+            Branch
+            <select id="branch-select" required></select>
+          </label>
+
+          <div>
+            <div style="font-weight:600;margin-bottom:.45rem">Current crowd</div>
+            <div class="crowd-picker">
+              <button type="button" data-level="low">🟢 Low</button>
+              <button type="button" data-level="medium">🟡 Medium</button>
+              <button type="button" data-level="high">🔴 High</button>
+            </div>
+          </div>
+
+          <label>
+            Approximate waiting time (minutes)
+            <input id="wait-input" type="number" min="5" max="240" placeholder="e.g. 45" />
+          </label>
+
+          <button class="btn btn-primary" type="submit">Submit report</button>
+        </form>
+      </section>
+
+      <section id="report-result" class="panel hidden"></section>
+    </main>
+    <footer class="footer">Crowdsourced reports are labelled as user-reported — not official DHA data.</footer>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
