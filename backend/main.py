@@ -203,6 +203,14 @@ def services() -> list[dict[str, Any]]:
     return pd.read_csv(path).to_dict(orient="records")
 
 
+@app.get("/api/documents")
+def documents(service_id: str | None = None) -> list[dict[str, Any]]:
+    rows = engine.documents
+    if service_id:
+        rows = rows[rows["service_id"].astype(str) == service_id]
+    return rows.to_dict(orient="records")
+
+
 @app.post("/api/reports")
 def create_report(body: ReportRequest) -> dict[str, Any]:
     level = body.crowd_level.lower().strip()

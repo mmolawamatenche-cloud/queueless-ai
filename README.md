@@ -57,6 +57,7 @@ The hosted app is a public prototype, not a live government service. It uses sam
 
 - `POST /api/assist` — full AI plan
 - `POST /api/classify` — service intent only
+- `GET /api/documents?service_id=...` — document checklist, optionally filtered by service
 - `POST /api/reports` — crowdsourced queue report
 - `GET /api/dashboard` — admin metrics
 - `GET /api/history` — past plans
