@@ -27,6 +27,24 @@ def test_lost_id_intent():
     assert intent.service_id == "id_replacement"
 
 
+def test_driver_license_renewal_intent():
+    c = ServiceClassifier()
+    intent = c.classify("I need to renew my driving licence")
+    assert intent.service_id == "drivers_license_renewal"
+
+
+def test_new_driver_license_intent():
+    c = ServiceClassifier()
+    intent = c.classify("I need to apply for a new driver's licence")
+    assert intent.service_id == "drivers_license_new"
+
+
+def test_clinic_visit_intent():
+    c = ServiceClassifier()
+    intent = c.classify("I need to visit a clinic")
+    assert intent.service_id == "outpatient_queue"
+
+
 def test_recommendation_plan():
     p = QueuePredictor()
     e = RecommendationEngine(p)

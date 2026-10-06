@@ -104,15 +104,30 @@ PATTERNS: list[tuple[str, list[str]]] = [
         ],
     ),
     (
-        "drivers_licence",
+        "learners_license",
+        [r"learner'?s? licen[cs]e", r"learners? test"],
+    ),
+    (
+        "drivers_license_new",
         [
-            r"driver'?s? licen[cs]e",
-            r"driving licen[cs]e",
-            r"renew.*licen[cs]e",
+            r"new (?:driver'?s? |driving )licen[cs]e",
+            r"first(?:-time)? (?:driver'?s? |driving )licen[cs]e",
+            r"apply.*(?:driver'?s? |driving )licen[cs]e",
+            r"driving test",
         ],
     ),
     (
-        "clinic_visit",
+        "drivers_license_renewal",
+        [
+            r"renew.*(?:driver'?s? |driving )licen[cs]e",
+            r"(?:driver'?s? |driving )licen[cs]e.*renew",
+            r"licen[cs]e renewal",
+            r"driver'?s? licen[cs]e",
+            r"driving licen[cs]e",
+        ],
+    ),
+    (
+        "outpatient_queue",
         [
             r"clinic",
             r"doctor",
@@ -138,6 +153,8 @@ class ServiceClassifier:
         matched: list[str] = []
 
         for service_id, patterns in PATTERNS:
+            if service_id not in self.services.index:
+                continue
             hits = []
             for pat in patterns:
                 if re.search(pat, cleaned):
@@ -166,8 +183,9 @@ class ServiceClassifier:
 
         if best_id is None or best_id not in self.services.index:
             return self._fallback(
-                "I could not map that to a known Home Affairs service yet. "
-                "Try: 'I need to renew my passport' or 'I lost my ID'."
+                "I couldn't identify a matching service yet. "
+                "Try: 'I need to renew my passport', 'I need to renew my driver's licence', "
+                "or 'I need help with my SASSA grant'."
             )
 
         row = self.services.loc[best_id]
