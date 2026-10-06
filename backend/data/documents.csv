@@ -27,9 +27,71 @@ visa_application,passport,Valid passport,true,Current passport
 visa_application,application,Completed visa/permit forms,true,Relevant DHA forms
 visa_application,supporting,Supporting documents per permit type,true,Varies by permit category
 visa_application,appointment,Appointment confirmation,true,Where appointments are required
-drivers_licence,sa_id,South African ID,true,Valid ID
-drivers_licence,eye_test,Eye test certificate,true,From registered optometrist where required
-drivers_licence,old_licence,Current / expired licence,true,If renewing
-drivers_licence,payment,Payment method,true,Applicable fees
-clinic_visit,sa_id,South African ID / clinic card,true,For patient identification
-clinic_visit,referral,Referral letter,false,If referred from another facility
+refugee_asylum,travel_doc,Passport or travel document,false,If available from country of origin
+refugee_asylum,asylum_form,Completed asylum application (Section 22),true,Issued/processed at the refugee reception office
+refugee_asylum,biometrics,Biometric data capture,true,Fingerprints and photo taken on-site
+refugee_asylum,supporting,Supporting evidence of claim,false,Any documents supporting the asylum basis
+amendment,original_doc,Original document to be amended,true,The Home Affairs record being corrected
+amendment,proof,Proof supporting the correction,true,"e.g. birth certificate, marriage certificate, court order"
+amendment,affidavit,Sworn affidavit explaining the error,true,Sworn at a police station or commissioner of oaths
+grant_application,sa_id,South African ID,true,Valid ID book or smart ID card
+grant_application,proof_income,Proof of income / means test documents,true,"Payslips, UIF status, or affidavit of no income"
+grant_application,proof_residence,Proof of residence,true,"Utility bill, lease, or affidavit"
+grant_application,bank_details,Bank account details,true,For grant payment
+grant_application,dependent_docs,Dependent's documents,false,"Child's birth certificate for child support grant, etc."
+grant_query,sa_id,South African ID,true,Valid ID
+grant_query,sassa_ref,SASSA reference number or card,true,From original application or SRD card
+grant_appeal,sa_id,South African ID,true,Valid ID
+grant_appeal,rejection_letter,Grant rejection/suspension letter,true,Original SASSA notice
+grant_appeal,appeal_form,Completed appeal form,true,Available at SASSA office
+grant_appeal,supporting,Supporting evidence for appeal,false,Any new/updated documentation
+tax_registration,sa_id,South African ID,true,Valid ID
+tax_registration,proof_address,Proof of residential address,true,Not older than 3 months
+tax_registration,bank_details,Bank account confirmation letter,false,For refunds
+efiling_support,sa_id,South African ID,true,Valid ID
+efiling_support,tax_number,Tax reference number,true,If previously registered
+efiling_support,issue_proof,Description/proof of the eFiling issue,false,Screenshots or error messages help
+tax_query,sa_id,South African ID,true,Valid ID
+tax_query,tax_number,Tax reference number,true,Required for most queries
+tax_query,supporting,Supporting documents for the query,false,"Assessments, letters, or notices received"
+uif_claim,sa_id,South African ID,true,Valid ID
+uif_claim,uif_form,Completed UIF claim form,true,UI-2.8 or relevant form
+uif_claim,service_cert,Certificate/letter of service from employer,true,UI-19 or equivalent
+uif_claim,bank_details,Bank account details,true,For UIF payment
+uif_claim,salary_schedule,Salary schedule / payslips,true,Recent pay history
+uif_query,sa_id,South African ID,true,Valid ID
+uif_query,uif_ref,UIF claim reference number,true,From original claim
+domestic_worker_registration,employer_id,Employer's ID,true,Valid ID
+domestic_worker_registration,worker_id,Domestic worker's ID,true,Valid ID
+domestic_worker_registration,contract,Employment contract/details,true,"Hours, wage, start date"
+drivers_license_renewal,sa_id,South African ID,true,Valid ID
+drivers_license_renewal,eye_test,Eye test certificate,true,From registered optometrist where required
+drivers_license_renewal,old_licence,Current/expired licence,true,Being renewed
+drivers_license_renewal,payment,Payment method,true,Applicable fees
+drivers_license_new,sa_id,South African ID,true,Valid ID
+drivers_license_new,eye_test,Eye test certificate,true,From registered optometrist
+drivers_license_new,learners,Valid learner's licence,true,Prerequisite for the driving test
+drivers_license_new,payment,Payment method,true,Applicable fees
+drivers_license_new,photos,ID photos,false,If required by testing centre
+learners_license,sa_id,South African ID,true,Valid ID
+learners_license,eye_test,Eye test certificate,true,From registered optometrist
+learners_license,payment,Payment method,true,Applicable fees
+vehicle_registration,sa_id,South African ID,true,Valid ID
+vehicle_registration,proof_ownership,Proof of ownership / sale agreement,true,Signed by buyer and seller
+vehicle_registration,roadworthy,Roadworthy certificate,false,Required for change of ownership in some cases
+vehicle_registration,payment,Payment method,true,Applicable fees and licensing costs
+utility_account,sa_id,South African ID,true,Valid ID
+utility_account,proof_address,Proof of residence,true,Lease agreement or title deed
+utility_account,proof_ownership,Proof of ownership or lease,true,Title deed or signed lease
+indigent_registration,sa_id,South African ID,true,Valid ID
+indigent_registration,proof_income,Proof of income / unemployment,true,"Payslip, UIF letter, or affidavit"
+indigent_registration,proof_address,Proof of residence,true,Municipal account or lease
+municipal_query,sa_id,South African ID,true,Valid ID
+municipal_query,account_number,Municipal account number,true,From latest statement
+police_clearance,sa_id,South African ID,true,Valid ID
+police_clearance,fingerprints,Fingerprints,true,Taken on-site at the station
+police_clearance,payment,Payment method,true,Applicable fees
+affidavit,sa_id,South African ID,true,Valid ID
+affidavit,statement,Written or verbal statement details,true,What is being sworn to
+outpatient_queue,id_or_clinic_card,South African ID or clinic card,true,For patient identification
+outpatient_queue,referral,Referral letter,false,If referred from another facility
