@@ -22,6 +22,13 @@ from backend.ai.queue_predictor import QueuePredictor
 from backend.ai.recommendation_engine import RecommendationEngine
 from backend.ai.service_classifier import ServiceClassifier
 from backend.database import database as db
+from backend.institutions import (
+    create_visit_plan,
+    find_institution,
+    find_service,
+    get_all_institutions,
+    get_queue_status,
+)
 
 FRONTEND = ROOT / "frontend"
 
@@ -92,6 +99,41 @@ def health() -> dict[str, Any]:
         "model": predictor.meta,
         "privacy": "MVP stores no ID/passport images — checklist only",
     }
+
+
+@app.get("/api/institutions")
+def institutions() -> list[dict[str, Any]]:
+    """Return the demo institution catalogue used by the AI assistant."""
+    return get_all_institutions()
+
+
+@app.get("/api/institution")
+def institution_lookup(name: str | None = None, query: str | None = None) -> dict[str, Any]:
+    """Look up an institution by name/category and return queue status metadata."""
+    target = query or name
+    institution = find_institution(target or "") if target else None
+    if institution is None:
+        return {"error": "Institution not found"}
+    return get_queue_status(institution.name)
+
+
+@app.get("/api/queue-status")
+def queue_status(institution_name: str) -> dict[str, Any]:
+    """Return queue status and wait estimate for an institution."""
+    return get_queue_status(institution_name)
+
+
+@app.get("/api/services/search")
+def service_search(query: str) -> list[dict[str, Any]]:
+    """Return services matching the provided keyword."""
+    return find_service(query)
+
+
+@app.post("/api/visit-plan")
+def visit_plan(payload: dict[str, Any]) -> dict[str, Any]:
+    """Return a simple visit plan based on the institution demo rules."""
+    user_request = payload.get("user_request") or payload.get("query") or ""
+    return create_visit_plan(str(user_request))
 
 
 @app.get("/api/credibility")
