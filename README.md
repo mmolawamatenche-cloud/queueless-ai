@@ -69,6 +69,7 @@ The hosted app is a public prototype, not a live government service. It uses sam
 - Predictions = **AI estimate based on historical/sample data**
 - Crowd submissions = **user-reported**
 - Document lists = **sample MVP checklist** (confirm with Home Affairs)
+- Queue history includes the South African public holiday calendar in `backend/data/sa_public_holidays.csv`.
 
 ## Project layout
 

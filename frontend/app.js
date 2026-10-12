@@ -52,6 +52,27 @@ function crowdClass(level) {
   return "crowd-medium";
 }
 
+function formatRecommendedDate(dateValue) {
+  const match = String(dateValue || "").match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return dateValue || "";
+
+  const [, year, month, day] = match;
+  const date = new Date(Number(year), Number(month) - 1, Number(day));
+  if (
+    date.getFullYear() !== Number(year) ||
+    date.getMonth() !== Number(month) - 1 ||
+    date.getDate() !== Number(day)
+  ) {
+    return dateValue;
+  }
+
+  return new Intl.DateTimeFormat("en-ZA", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(date);
+}
+
 function renderDocuments(docs) {
   if (!docs?.length) return "<p class='empty'>No checklist for this service.</p>";
   return `<ul class="doc-list">${docs
@@ -139,7 +160,7 @@ function renderPlan(plan, intent, demoNotice) {
           </div>
           <div class="meta">
             <span class="k">Recommended</span>
-            <span class="v">${plan.recommended_day}<br>${plan.recommended_time}</span>
+            <span class="v">${plan.recommended_day}${plan.recommended_date ? `, ${formatRecommendedDate(plan.recommended_date)}` : ""}<br>${plan.recommended_time}</span>
           </div>
           <div class="meta">
             <span class="k">Confidence</span>
