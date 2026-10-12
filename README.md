@@ -43,6 +43,7 @@ The hosted app is a public prototype, not a live government service. It uses sam
 4. You get a plan: branch, wait range, recommended time, checklist.
 5. **Report Queue** → submit crowd level → prediction updates.
 6. **Dashboard** shows reports and model metrics.
+7. **Book visit & get receipt** → create a demo booking, then download or print its receipt.
 
 ## Stack
 

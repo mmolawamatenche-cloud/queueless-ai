@@ -307,6 +307,32 @@ textarea {
   line-height: 1.5;
 }
 
+.booking-card .receipt-details {
+  display: grid;
+  grid-template-columns: minmax(110px, 170px) 1fr;
+  gap: 0.55rem 1rem;
+  margin: 1rem 0;
+}
+
+.receipt-details dt {
+  font-weight: 700;
+}
+
+.receipt-details dd {
+  margin: 0;
+}
+
+.receipt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 1rem;
+}
+
+.booking-status:empty {
+  display: none;
+}
+
 .location-row {
   display: flex;
   flex-wrap: wrap;

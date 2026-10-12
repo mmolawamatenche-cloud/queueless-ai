@@ -73,6 +73,146 @@ function formatRecommendedDate(dateValue) {
   }).format(date);
 }
 
+function escapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, (char) => {
+    const entities = {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;",
+    };
+    return entities[char];
+  });
+}
+
+function receiptText(receipt) {
+  return [
+    "QUEUELESS AI — DEMO BOOKING RECEIPT",
+    `Reference: ${receipt.reference}`,
+    `Service: ${receipt.service_name}`,
+    `Branch: ${receipt.branch_name}`,
+    `Address: ${receipt.address}, ${receipt.city}`,
+    `Recommended visit: ${receipt.recommended_day}, ${formatRecommendedDate(receipt.recommended_date)}`,
+    `Time: ${receipt.recommended_time}`,
+    `Status: ${receipt.status}`,
+    `Issued: ${new Date(receipt.created_at).toLocaleString("en-ZA")}`,
+    "",
+    receipt.disclaimer,
+  ].join("\n");
+}
+
+function downloadReceipt(receipt) {
+  const file = new Blob([receiptText(receipt)], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(file);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `queueless-receipt-${receipt.reference}.txt`;
+  link.click();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function printReceipt(receipt) {
+  const printWindow = window.open("", "_blank");
+  if (!printWindow) {
+    throw new Error("Allow pop-ups to print or save your receipt as a PDF.");
+  }
+  const fields = [
+    ["Reference", receipt.reference],
+    ["Service", receipt.service_name],
+    ["Branch", receipt.branch_name],
+    ["Address", `${receipt.address}, ${receipt.city}`],
+    ["Recommended visit", `${receipt.recommended_day}, ${formatRecommendedDate(receipt.recommended_date)}`],
+    ["Time", receipt.recommended_time],
+    ["Status", receipt.status],
+    ["Issued", new Date(receipt.created_at).toLocaleString("en-ZA")],
+  ];
+  printWindow.document.open();
+  printWindow.document.write(`
+    <!doctype html>
+    <html lang="en-ZA">
+      <head>
+        <meta charset="utf-8">
+        <title>QueueLess demo booking receipt ${escapeHtml(receipt.reference)}</title>
+        <style>
+          body { font: 16px/1.5 Arial, sans-serif; max-width: 680px; margin: 3rem auto; padding: 0 1.5rem; color: #17211c; }
+          h1 { font-size: 1.5rem; }
+          dl { display: grid; grid-template-columns: 170px 1fr; gap: .65rem 1rem; }
+          dt { font-weight: 700; }
+          dd { margin: 0; }
+          .notice { margin-top: 2rem; padding: 1rem; background: #fff8e5; border: 1px solid #e8c971; }
+          @media print { body { margin: 1rem auto; } }
+        </style>
+      </head>
+      <body>
+        <h1>QueueLess AI — Demo Booking Receipt</h1>
+        <dl>${fields.map(([label, value]) => `<dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value)}</dd>`).join("")}</dl>
+        <p class="notice">${escapeHtml(receipt.disclaimer)}</p>
+        <script>window.addEventListener("load", () => window.print());</script>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+}
+
+async function bookRecommendedVisit(plan, button, receiptElement, statusElement) {
+  button.disabled = true;
+  statusElement.textContent = "Creating your demo booking…";
+  try {
+    const params = new URLSearchParams({
+      service: plan.service_id,
+      branch: plan.branch_id,
+      preferred_time: `${plan.recommended_date} ${plan.recommended_time}`,
+    });
+    const booking = await api(`/api/demo-booking?${params}`, { method: "POST" });
+    const receipt = {
+      ...booking,
+      service_name: plan.service_name,
+      branch_name: plan.branch_name,
+      address: plan.address,
+      city: plan.city,
+      recommended_day: plan.recommended_day,
+      recommended_date: plan.recommended_date,
+      recommended_time: plan.recommended_time,
+    };
+    receiptElement.innerHTML = `
+      <span class="badge">DEMO — SIMULATED BOOKING</span>
+      <h3>Booking receipt · ${escapeHtml(receipt.reference)}</h3>
+      <dl class="receipt-details">
+        <dt>Service</dt><dd>${escapeHtml(receipt.service_name)}</dd>
+        <dt>Branch</dt><dd>${escapeHtml(receipt.branch_name)}</dd>
+        <dt>Address</dt><dd>${escapeHtml(receipt.address)}, ${escapeHtml(receipt.city)}</dd>
+        <dt>Date</dt><dd>${escapeHtml(receipt.recommended_day)}, ${escapeHtml(formatRecommendedDate(receipt.recommended_date))}</dd>
+        <dt>Time</dt><dd>${escapeHtml(receipt.recommended_time)}</dd>
+        <dt>Status</dt><dd>${escapeHtml(receipt.status)}</dd>
+        <dt>Issued</dt><dd>${escapeHtml(new Date(receipt.created_at).toLocaleString("en-ZA"))}</dd>
+      </dl>
+      <p class="disclaimer">${escapeHtml(receipt.disclaimer)}</p>
+      <div class="receipt-actions">
+        <button type="button" class="btn btn-primary" data-download-receipt>Download receipt</button>
+        <button type="button" class="btn btn-ghost" data-print-receipt>Print / Save as PDF</button>
+      </div>
+    `;
+    receiptElement.classList.remove("hidden");
+    statusElement.textContent = "Your demo booking was created. You can download or print the receipt below.";
+    receiptElement.querySelector("[data-download-receipt]")?.addEventListener("click", () => {
+      downloadReceipt(receipt);
+    });
+    receiptElement.querySelector("[data-print-receipt]")?.addEventListener("click", () => {
+      try {
+        printReceipt(receipt);
+      } catch (err) {
+        statusElement.textContent = err.message;
+      }
+    });
+    receiptElement.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  } catch (err) {
+    statusElement.textContent = `Could not create the booking: ${err.message}`;
+  } finally {
+    button.disabled = false;
+  }
+}
+
 function renderDocuments(docs) {
   if (!docs?.length) return "<p class='empty'>No checklist for this service.</p>";
   return `<ul class="doc-list">${docs
@@ -208,10 +348,22 @@ function renderPlan(plan, intent, demoNotice) {
       <span id="feedback-thanks" class="hidden" style="color:var(--green);font-weight:600"></span>
     </div>
     <div style="margin-top:1rem;display:flex;gap:.6rem;flex-wrap:wrap">
+      <button type="button" class="btn btn-primary" data-book-visit>Book visit &amp; get receipt</button>
       <a class="btn btn-primary" href="/report.html">Report a queue</a>
       <a class="btn btn-ghost" href="/plan.html">Open My Plan</a>
     </div>
+    <p class="booking-status" data-booking-status role="status" aria-live="polite"></p>
+    <section class="booking-card demo hidden" data-booking-receipt aria-label="Demo booking receipt"></section>
   `;
+
+  const bookingButton = el.querySelector("[data-book-visit]");
+  const receiptElement = el.querySelector("[data-booking-receipt]");
+  const statusElement = el.querySelector("[data-booking-status]");
+  bookingButton?.addEventListener("click", () => {
+    if (receiptElement && statusElement) {
+      bookRecommendedVisit(plan, bookingButton, receiptElement, statusElement);
+    }
+  });
 
   el.querySelectorAll("[data-useful]").forEach((btn) => {
     btn.addEventListener("click", async () => {
