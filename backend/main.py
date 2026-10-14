@@ -21,6 +21,7 @@ from backend.ai.demo_booking import create_demo_booking
 from backend.ai.queue_predictor import QueuePredictor
 from backend.ai.recommendation_engine import RecommendationEngine
 from backend.ai.service_classifier import ServiceClassifier
+from backend.ai.slot_rotation import plan_is_stale
 from backend.database import database as db
 from backend.institutions import (
     create_visit_plan,
@@ -299,7 +300,12 @@ def get_reports(limit: int = 50) -> list[dict[str, Any]]:
 
 @app.get("/api/history")
 def history(limit: int = 20) -> list[dict[str, Any]]:
-    return db.list_plans(limit=limit)
+    plans = db.list_plans(limit=limit)
+    for item in plans:
+        slot = item["plan"].get("slot")
+        if slot and slot.get("start_iso"):
+            item["is_stale"] = plan_is_stale(str(slot["start_iso"]))
+    return plans
 
 
 @app.get("/api/dashboard")

@@ -1,12 +1,13 @@
 """Basic journey tests for QueueLess AI."""
 from datetime import date, datetime
+from unittest.mock import Mock
 
 import backend.ai.recommendation_engine as recommendation_engine_module
 
 from backend.ai.demo_booking import create_demo_booking
 from backend.ai.recommendation_engine import RecommendationEngine
 from backend.ai.service_classifier import ServiceClassifier
-from backend.ai.queue_predictor import QueuePredictor
+from backend.ai.queue_predictor import PredictionResult, QueuePredictor
 from backend.data.generate_queue_data import _load_holidays
 
 
@@ -79,6 +80,13 @@ def test_recommendation_plan():
     assert plan.estimated_wait_low <= plan.estimated_wait_high
     assert "Appointment confirmation" in plan.missing_documents
     assert plan.data_labels["mode"] == "Demo Mode"
+    assert plan.slot["wait_range"] == [
+        plan.estimated_wait_low,
+        plan.estimated_wait_high,
+    ]
+    assert plan.rotation["pool_size"] >= 1
+    assert plan.recommended_text
+    assert plan.rotation_note
 
 
 def test_recommendation_skips_elapsed_slots(monkeypatch):
@@ -95,3 +103,43 @@ def test_recommendation_skips_elapsed_slots(monkeypatch):
 
     assert plan is not None
     assert plan.recommended_date > "2026-10-15"
+
+
+def test_recommendation_rotates_slots_between_assist_requests(monkeypatch):
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 10, 15, 10, 0, tzinfo=tz)
+
+    class FixedPredictor:
+        history = None
+        meta = {"mae_minutes": 8}
+        predict = Mock(
+            return_value=PredictionResult(
+                predicted_wait_minutes=30,
+                wait_range_low=22,
+                wait_range_high=38,
+                confidence=0.82,
+                label="test",
+                historical_estimate=30,
+                reported_wait=None,
+                crowd_adjustment=0,
+                explanation="test estimate",
+            )
+        )
+
+    monkeypatch.setattr(recommendation_engine_module, "datetime", FrozenDateTime)
+    monkeypatch.setattr(
+        recommendation_engine_module,
+        "next_rotation_index",
+        Mock(side_effect=[0, 1]),
+    )
+
+    engine = RecommendationEngine(FixedPredictor())
+    intent = ServiceClassifier().classify("I need to renew my passport")
+    first_plan = engine.build_plan(intent, location="Johannesburg")
+    second_plan = engine.build_plan(intent, location="Johannesburg")
+
+    assert first_plan is not None
+    assert second_plan is not None
+    assert first_plan.slot["start_iso"] != second_plan.slot["start_iso"]

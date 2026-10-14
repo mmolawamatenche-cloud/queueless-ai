@@ -316,6 +316,7 @@ function renderPlan(plan, intent, demoNotice) {
           <strong>Why this plan</strong>
           ${plan.ai_recommendation}
           <div style="margin-top:.65rem;color:var(--ink-soft)">${plan.reason}</div>
+          ${plan.rotation_note ? `<div style="margin-top:.65rem;color:var(--ink-soft)">${plan.rotation_note}</div>` : ""}
         </div>
         <p class="disclaimer">${plan.disclaimer || "AI estimate only — verify official requirements before travelling."}</p>
       </div>
@@ -336,7 +337,7 @@ function renderPlan(plan, intent, demoNotice) {
            <div class="alts">${plan.alternatives
              .map(
                (a) =>
-                 `<div class="alt"><strong>${a.branch_name}</strong> · ${a.day} ${a.time} · ~${a.estimated_wait} min <span class="badge badge-pred">AI predicted</span></div>`
+                   `<div class="alt"><strong>${a.branch_name}</strong> · ${a.day}${a.date ? `, ${formatRecommendedDate(a.date)}` : ""} ${a.time} · ~${a.estimated_wait} min <span class="badge badge-pred">AI predicted</span></div>`
              )
              .join("")}</div>`
         : ""
@@ -613,7 +614,7 @@ async function initHistory() {
         const p = item.plan || {};
         return `<div class="history-item">
           <div class="q">“${item.user_query}”</div>
-          <div class="meta-line">${p.service_name || item.service_id || "—"} → ${p.branch_name || "—"} · ${p.recommended_time || ""} · ${new Date(item.created_at).toLocaleString()}</div>
+          <div class="meta-line">${p.service_name || item.service_id || "—"} → ${p.branch_name || "—"} · ${p.recommended_time || ""}${item.is_stale ? " · Recommended time has passed" : ""} · ${new Date(item.created_at).toLocaleString()}</div>
         </div>`;
       })
       .join("");

@@ -11,6 +11,13 @@ import pandas as pd
 
 from backend.ai.queue_predictor import PredictionResult, QueuePredictor
 from backend.ai.service_classifier import ServiceIntent
+from backend.ai.slot_rotation import (
+    RotationInfo,
+    SlotPayload,
+    load_holidays,
+    next_rotation_index,
+    recommend_slot,
+)
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -68,6 +75,10 @@ class VisitPlan:
     recommended_day: str
     recommended_date: str
     recommended_time: str
+    recommended_text: str
+    slot: SlotPayload
+    rotation: RotationInfo
+    rotation_note: str
     prediction_confidence: float
     documents: list[dict[str, Any]]
     missing_documents: list[str]
@@ -181,12 +192,16 @@ class RecommendationEngine:
 
         # Score upcoming weekday slots in the user's local South African time.
         now = datetime.now(ZoneInfo("Africa/Johannesburg"))
+        horizon_days = 3 if intent.urgency == "high" else 7
+        holidays = load_holidays()
         scored: list[dict[str, Any]] = []
 
         for branch, distance in candidates:
-            for day_offset in range(0, 6):
+            for day_offset in range(horizon_days):
                 dt = now + timedelta(days=day_offset)
                 if dt.weekday() >= 5:  # skip weekend (branches closed in sample)
+                    continue
+                if dt.date() in holidays:
                     continue
                 if not self._is_open(branch, dt):
                     continue
@@ -223,26 +238,59 @@ class RecommendationEngine:
                     )
 
         scored.sort(key=lambda x: x["score"])
+        if not scored:
+            return None
         best = scored[0]
         branch = best["branch"]
-        pred: PredictionResult = best["pred"]
+        branch_id = str(branch["branch_id"])
+        prediction_by_slot: dict[datetime, PredictionResult] = {}
+
+        def predict_slot(slot_start: datetime) -> tuple[float, tuple[int, int]]:
+            reports = recent_reports_by_branch.get(branch_id, [])
+            prediction = self.predictor.predict(
+                branch_id=branch_id,
+                day=slot_start.strftime("%A"),
+                hour=slot_start.hour,
+                service_id=intent.service_id,
+                month=slot_start.month,
+                recent_reports=reports if slot_start.date() == now.date() else None,
+            )
+            prediction_by_slot[slot_start] = prediction
+            return (
+                prediction.predicted_wait_minutes,
+                (prediction.wait_range_low, prediction.wait_range_high),
+            )
+
+        recommendation = recommend_slot(
+            branch_id,
+            predict_slot,
+            now=now,
+            rotation_index=next_rotation_index(branch_id, intent.service_id),
+            horizon_days=horizon_days,
+        )
+        if recommendation is None:
+            return None
+
+        slot = recommendation["slot"]
+        slot_start = datetime.fromisoformat(str(slot["start_iso"]))
+        pred = prediction_by_slot[slot_start]
         crowd, crowd_label = self._crowd_from_wait(pred.predicted_wait_minutes)
 
         docs = self.documents_for_service(intent.service_id, user_documents)
         missing = [d.name for d in docs if d.status == "missing" and d.required]
 
-        time_label = f"{best['hour']:02d}:00–{best['hour']+1:02d}:00"
-        date_label = best["date"]
-        if best["date"] == now.strftime("%Y-%m-%d"):
+        time_label = f"{slot['start']}–{slot['end']}"
+        date_label = str(slot["date"])
+        if date_label == now.strftime("%Y-%m-%d"):
             when = f"Today, {time_label}"
-        elif best["date"] == (now + timedelta(days=1)).strftime("%Y-%m-%d"):
+        elif date_label == (now + timedelta(days=1)).strftime("%Y-%m-%d"):
             when = f"Tomorrow, {time_label}"
         else:
-            when = f"{best['day_name']}, {time_label}"
+            when = f"{slot['day']}, {time_label}"
 
         reason = (
             f"Recommended because {branch['branch_name']} historically has shorter queues "
-            f"around {time_label} on {best['day_name']}s, is relatively close to your "
+            f"around {time_label} on {slot['day']}s, is relatively close to your "
             f"location (~{best['distance']:.0f} km), and offers {intent.service_name}."
         )
         if missing:
@@ -259,18 +307,20 @@ class RecommendationEngine:
                 f"(AI estimate based on historical/sample data)."
             )
 
+        rotation = recommendation["rotation"]
         alternatives = []
-        for item in scored[1:4]:
-            b = item["branch"]
-            p: PredictionResult = item["pred"]
+        for item in recommendation["alternatives"]:
+            wait_range = item["wait_range"]
             alternatives.append(
                 {
-                    "branch_id": str(b["branch_id"]),
-                    "branch_name": str(b["branch_name"]),
-                    "day": item["day_name"],
-                    "time": f"{item['hour']:02d}:00",
-                    "estimated_wait": p.predicted_wait_minutes,
-                    "confidence": p.confidence,
+                    "branch_id": branch_id,
+                    "branch_name": str(branch["branch_name"]),
+                    "day": item["day"],
+                    "date": item["date"],
+                    "time": f"{item['start']}–{item['end']}",
+                    "estimated_wait": item["wait_minutes"],
+                    "wait_range": wait_range,
+                    "confidence": pred.confidence,
                 }
             )
 
@@ -339,9 +389,13 @@ class RecommendationEngine:
             estimated_wait_low=pred.wait_range_low,
             estimated_wait_high=pred.wait_range_high,
             predicted_wait=pred.predicted_wait_minutes,
-            recommended_day=best["day_name"],
+            recommended_day=str(slot["day"]),
             recommended_date=date_label,
             recommended_time=time_label,
+            recommended_text=str(recommendation["recommended_text"]),
+            slot=slot,
+            rotation=rotation,
+            rotation_note=str(recommendation["note"]),
             prediction_confidence=pred.confidence,
             documents=[asdict(d) for d in docs],
             missing_documents=missing,
