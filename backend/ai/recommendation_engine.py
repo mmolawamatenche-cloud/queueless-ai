@@ -5,6 +5,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
+from zoneinfo import ZoneInfo
 
 import pandas as pd
 
@@ -178,8 +179,8 @@ class RecommendationEngine:
         if not candidates:
             return None
 
-        # Score time slots for next 5 weekdays × afternoon/morning hours
-        now = datetime.now()
+        # Score upcoming weekday slots in the user's local South African time.
+        now = datetime.now(ZoneInfo("Africa/Johannesburg"))
         scored: list[dict[str, Any]] = []
 
         for branch, distance in candidates:
@@ -191,12 +192,15 @@ class RecommendationEngine:
                     continue
                 day_name = dt.strftime("%A")
                 for hour in (8, 10, 11, 14, 15):
+                    if dt.date() == now.date() and hour <= now.hour:
+                        continue
                     reports = recent_reports_by_branch.get(str(branch["branch_id"]), [])
                     pred = self.predictor.predict(
                         branch_id=str(branch["branch_id"]),
                         day=day_name,
                         hour=hour,
                         service_id=intent.service_id,
+                        month=dt.month,
                         recent_reports=reports if day_offset == 0 else None,
                     )
                     # Prefer lower wait, closer branch, mid-afternoon historically quieter

@@ -1,5 +1,7 @@
 """Basic journey tests for QueueLess AI."""
-from datetime import date
+from datetime import date, datetime
+
+import backend.ai.recommendation_engine as recommendation_engine_module
 
 from backend.ai.demo_booking import create_demo_booking
 from backend.ai.recommendation_engine import RecommendationEngine
@@ -77,3 +79,19 @@ def test_recommendation_plan():
     assert plan.estimated_wait_low <= plan.estimated_wait_high
     assert "Appointment confirmation" in plan.missing_documents
     assert plan.data_labels["mode"] == "Demo Mode"
+
+
+def test_recommendation_skips_elapsed_slots(monkeypatch):
+    class FrozenDateTime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return cls(2026, 10, 15, 15, 30, tzinfo=tz)
+
+    monkeypatch.setattr(recommendation_engine_module, "datetime", FrozenDateTime)
+
+    engine = RecommendationEngine()
+    intent = ServiceClassifier().classify("I need to renew my passport")
+    plan = engine.build_plan(intent, location="Johannesburg")
+
+    assert plan is not None
+    assert plan.recommended_date > "2026-10-15"
