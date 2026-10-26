@@ -636,6 +636,36 @@ async function initDashboard() {
     mount.innerHTML = `
       <div class="notice">${d.data_quality.label} · ${d.data_quality.mode} · Live DHA API: no</div>
 
+      <section class="panel queue-compare" aria-labelledby="queue-compare-title">
+        <h2 id="queue-compare-title">Compare branch wait estimates</h2>
+        <p class="compare-intro">Choose a service and visit time to compare branches that offer it.</p>
+        <form id="queue-compare-form" class="compare-form">
+          <label>Service
+            <select id="compare-service" name="service_id" required>
+              <option value="">Loading services…</option>
+            </select>
+          </label>
+          <label>Weekday
+            <select id="compare-day" name="day">
+              ${["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
+                .map((day) => `<option value="${day}">${day}</option>`)
+                .join("")}
+            </select>
+          </label>
+          <label>Hour
+            <select id="compare-hour" name="hour">
+              ${Array.from({ length: 8 }, (_, index) => index + 8)
+                .map((hour) => `<option value="${hour}"${hour === 10 ? " selected" : ""}>${String(hour).padStart(2, "0")}:00</option>`)
+                .join("")}
+            </select>
+          </label>
+          <button class="btn btn-primary" type="submit" id="compare-submit">Compare queues</button>
+        </form>
+        <p id="compare-status" class="booking-status" role="status" aria-live="polite"></p>
+        <div id="compare-results" aria-live="polite"></div>
+        <p class="disclaimer">Demo estimates only — not live queue data or a guaranteed wait time.</p>
+      </section>
+
       <div class="panel" style="margin-top:0">
         <h3>Judge-facing data answer</h3>
         <p style="line-height:1.55;margin:0">${cred.judge_answer}</p>
@@ -702,9 +732,83 @@ async function initDashboard() {
         <p style="color:var(--muted);font-size:.88rem">Privacy: ${cred.privacy?.document_feature || "checklist only"}</p>
       </div>
     `;
+    initQueueComparison();
   } catch (err) {
     mount.innerHTML = `<p class="empty">${err.message}</p>`;
   }
+}
+
+async function initQueueComparison() {
+  const form = $("#queue-compare-form");
+  const serviceSelect = $("#compare-service");
+  const status = $("#compare-status");
+  const results = $("#compare-results");
+  const submit = $("#compare-submit");
+  if (!form || !serviceSelect || !status || !results || !submit) return;
+
+  try {
+    const services = await api("/api/services");
+    serviceSelect.innerHTML = services
+      .map(
+        (service) =>
+          `<option value="${escapeHtml(service.service_id)}">${escapeHtml(service.service_name)}</option>`
+      )
+      .join("");
+  } catch (err) {
+    serviceSelect.innerHTML = `<option value="">Services could not be loaded</option>`;
+    status.textContent = `Could not load services: ${err.message}`;
+    submit.disabled = true;
+    return;
+  }
+
+  const today = new Date().getDay();
+  const defaultDay = today >= 1 && today <= 5 ? today - 1 : 0;
+  $("#compare-day").selectedIndex = defaultDay;
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    submit.disabled = true;
+    status.textContent = "Comparing available branches…";
+    results.innerHTML = "";
+    try {
+      const data = await api("/api/compare-queues", {
+        method: "POST",
+        body: JSON.stringify({
+          service_id: serviceSelect.value,
+          day: $("#compare-day").value,
+          hour: Number($("#compare-hour").value),
+        }),
+      });
+      const winner = data.comparisons[0]?.branch_name;
+      results.innerHTML = `
+        <p class="compare-summary">Ranked from shortest to longest estimate for ${escapeHtml(data.day)} at ${String(data.hour).padStart(2, "0")}:00.</p>
+        <ol class="compare-results">
+          ${data.comparisons
+            .map((item, index) => {
+              const prediction = item.prediction;
+              return `<li class="compare-result${index === 0 ? " recommended" : ""}">
+                <div>
+                  <strong>${escapeHtml(item.branch_name)}</strong>
+                  <span>${escapeHtml(item.city)}${index === 0 ? " · Shortest estimate" : ""}</span>
+                </div>
+                <div class="compare-wait">
+                  <strong>${prediction.wait_range_low}–${prediction.wait_range_high} min</strong>
+                  <span>${prediction.predicted_wait_minutes} min estimate · ${Math.round(prediction.confidence * 100)}% confidence</span>
+                  <span>${item.recent_reports_used} recent report(s) used</span>
+                </div>
+              </li>`;
+            })
+            .join("")}
+        </ol>
+        <p class="evidence-note">${escapeHtml(data.label)}. Shortest estimate: ${escapeHtml(winner)}.</p>
+      `;
+      status.textContent = `${data.comparisons.length} branches compared.`;
+    } catch (err) {
+      status.textContent = `Could not compare branches: ${err.message}`;
+    } finally {
+      submit.disabled = false;
+    }
+  });
 }
 
 document.addEventListener("DOMContentLoaded", () => {

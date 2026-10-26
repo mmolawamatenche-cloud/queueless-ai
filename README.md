@@ -44,6 +44,7 @@ The hosted app is a public prototype, not a live government service. It uses sam
 5. **Report Queue** → submit crowd level → prediction updates.
 6. **Dashboard** shows reports and model metrics.
 7. **Book visit & get receipt** → create a demo booking, then download or print its receipt.
+8. **Dashboard → Compare branch wait estimates** → rank branches offering a service for a selected weekday and hour.
 
 ## Stack
 
@@ -58,6 +59,7 @@ The hosted app is a public prototype, not a live government service. It uses sam
 
 - `POST /api/assist` — full AI plan
 - `POST /api/classify` — service intent only
+- `POST /api/compare-queues` — compare service wait estimates across branches by weekday and hour
 - `GET /api/documents?service_id=...` — document checklist, optionally filtered by service
 - `POST /api/reports` — crowdsourced queue report
 - `GET /api/dashboard` — admin metrics

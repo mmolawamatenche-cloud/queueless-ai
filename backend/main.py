@@ -1,6 +1,8 @@
 """QueueLess AI — FastAPI application (AI-first service-access assistant)."""
 from __future__ import annotations
 
+import calendar
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -32,6 +34,48 @@ from backend.institutions import (
 )
 
 FRONTEND = ROOT / "frontend"
+
+HOME_AFFAIRS_SERVICES = {
+    "passport_renewal",
+    "passport_new",
+    "id_replacement",
+    "id_application",
+    "birth_registration",
+    "marriage_certificate",
+    "death_certificate",
+    "visa_application",
+}
+
+
+def _is_valid_sa_id(value: str) -> bool:
+    """Check South African ID format and check digit, not identity."""
+    if not re.fullmatch(r"\d{13}", value or ""):
+        return False
+
+    yy, mm, dd = int(value[0:2]), int(value[2:4]), int(value[4:6])
+    if not 1 <= mm <= 12:
+        return False
+
+    try:
+        max_day = calendar.monthrange(2000 + yy, mm)[1]
+    except ValueError:
+        return False
+    if not 1 <= dd <= max_day:
+        return False
+
+    if value[10] not in "01":
+        return False
+
+    digits = [int(ch) for ch in value]
+    odd_sum = sum(digits[0:12:2])
+    even_joined = "".join(str(digit) for digit in digits[1:12:2])
+    doubled_sum = sum(int(ch) for ch in str(int(even_joined) * 2))
+    return (odd_sum + doubled_sum + digits[12]) % 10 == 0
+
+
+def _masked_id(value: str) -> str:
+    """Return a display-safe ID fragment; callers should validate before use."""
+    return "•" * 9 + value[-4:]
 
 
 @asynccontextmanager
@@ -88,6 +132,12 @@ class FeedbackRequest(BaseModel):
     useful: bool
     comment: str | None = None
     plan_id: int | None = None
+
+
+class QueueComparisonRequest(BaseModel):
+    service_id: str = Field(..., min_length=1)
+    day: str
+    hour: int = Field(..., ge=8, le=15)
 
 
 @app.get("/api/health")
@@ -362,6 +412,58 @@ def predict_endpoint(payload: dict[str, Any]) -> dict[str, Any]:
         recent_reports=reports,
     )
     return predictor.to_dict(result)
+
+
+@app.post("/api/compare-queues")
+def compare_queues(body: QueueComparisonRequest) -> dict[str, Any]:
+    weekdays = {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday"}
+    if body.day not in weekdays:
+        raise HTTPException(status_code=400, detail="day must be a weekday")
+
+    comparisons = []
+    for _, branch in engine.branches.iterrows():
+        branch_id = str(branch["branch_id"])
+        services = str(branch["services_offered"]).split("|")
+        if body.service_id not in services:
+            continue
+
+        reports = db.recent_reports_for_branch(branch_id)
+        prediction = predictor.predict(
+            branch_id=branch_id,
+            day=body.day,
+            hour=body.hour,
+            service_id=body.service_id,
+            recent_reports=reports,
+        )
+        comparisons.append(
+            {
+                "branch_id": branch_id,
+                "branch_name": str(branch["branch_name"]),
+                "city": str(branch["city"]),
+                "prediction": predictor.to_dict(prediction),
+                "recent_reports_used": len(reports),
+            }
+        )
+
+    if not comparisons:
+        raise HTTPException(
+            status_code=404,
+            detail="No branches offer this service in the demo database.",
+        )
+
+    comparisons.sort(
+        key=lambda item: (
+            item["prediction"]["predicted_wait_minutes"],
+            item["branch_name"],
+        )
+    )
+    return {
+        "service_id": body.service_id,
+        "day": body.day,
+        "hour": body.hour,
+        "label": "AI estimates based on historical/sample data and recent user reports",
+        "comparisons": comparisons,
+    }
 
 
 # Static frontend

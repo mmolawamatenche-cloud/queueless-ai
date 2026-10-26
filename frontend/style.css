@@ -349,6 +349,75 @@ textarea {
   background: var(--surface);
 }
 
+.compare-intro,
+.compare-summary {
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.compare-form {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 0.75rem;
+  align-items: end;
+}
+
+.compare-form label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--ink-soft);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.compare-form select {
+  width: 100%;
+  min-height: 44px;
+  padding: 0.6rem 0.7rem;
+  border: 1.5px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.compare-results {
+  display: grid;
+  gap: 0.6rem;
+  margin: 0.75rem 0;
+  padding: 0;
+  list-style: none;
+}
+
+.compare-result {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.compare-result.recommended {
+  border-color: var(--green);
+  background: #eef8f1;
+}
+
+.compare-result > div,
+.compare-wait {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.compare-result span {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.compare-wait {
+  text-align: right;
+}
+
 /* —— Panels —— */
 .panel {
   margin-top: 1.25rem;
